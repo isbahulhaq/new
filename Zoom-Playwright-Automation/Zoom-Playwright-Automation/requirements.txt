@@ -1,0 +1,4 @@
+playwright
+nest-asyncio
+requests
+getindianname
