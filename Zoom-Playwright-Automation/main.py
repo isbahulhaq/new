@@ -1,22 +1,16 @@
-# Zoom Automation using Brave + Playwright
+# Zoom Automation using Playwright + getindianname
 
 import asyncio
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import nest_asyncio
-import random
+import requests
+from getindianname import random as indian_random
 from playwright.async_api import async_playwright
 
 nest_asyncio.apply()
 
 MUTEX = threading.Lock()
-BRAVE_PATH = "/usr/bin/brave-browser"
-
-
-def generate_name():
-    first = ["Arjun", "Rohan", "Rahul", "Aman", "Imran", "Sahil", "Kabir", "Farhan"]
-    last = ["Kumar", "Sharma", "Verma", "Ansari", "Ali", "Khan", "Singh", "Yadav"]
-    return random.choice(first) + " " + random.choice(last)
 
 
 def sync_print(text):
@@ -24,13 +18,12 @@ def sync_print(text):
         print(text)
 
 
-async def start(name_id, username, wait_time, meetingcode, passcode):
-    sync_print(f"{name_id} started!")
+async def start(name, user, wait_time, meetingcode, passcode):
+    sync_print(f"{name} started!")
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=True,
-            executable_path=BRAVE_PATH,
             args=[
                 "--use-fake-device-for-media-stream",
                 "--use-fake-ui-for-media-stream",
@@ -54,24 +47,24 @@ async def start(name_id, username, wait_time, meetingcode, passcode):
         except:
             pass
 
-        await page.wait_for_selector('input[type="text"]', timeout=200000)
-        await page.fill('input[type="text"]', username)
+        await page.wait_for_selector('input[type="text"]')
+        await page.fill('input[type="text"]', user)
         await page.fill('input[type="password"]', passcode)
 
         join_button = await page.wait_for_selector('button.preview-join-button')
         await join_button.click()
 
         try:
-            mic_button = await page.wait_for_selector('button:text(\"Join Audio by Computer\")', timeout=200000)
+            mic_button = await page.wait_for_selector('button:text(\"Join Audio by Computer\")', timeout=150000)
             await mic_button.click()
-            sync_print(f"{name_id} mic aayenge.")
-        except Exception as e:
-            sync_print(f"{name_id} mic nahi aayenge: {str(e)}")
+            sync_print(f"{name} mic aayenge.")
+        except:
+            sync_print(f"{name} mic nahi aayenge.")
 
-        sync_print(f"{name_id} sleeping for {wait_time} seconds ...")
+        sync_print(f"{name} sleeping...")
         await asyncio.sleep(wait_time)
-        sync_print(f"{name_id} ended!")
 
+        sync_print(f"{name} ended!")
         await browser.close()
 
 
@@ -80,16 +73,16 @@ async def main():
     meetingcode = input("Enter meeting code (No Space): ")
     passcode = input("Enter Password (No Space): ")
 
-    sec = 90
+    sec = 1
     wait_time = sec * 60
 
-    with ThreadPoolExecutor(max_workers=number) as executor:
+    with ThreadPoolExecutor(max_workers=number):
         loop = asyncio.get_event_loop()
         tasks = []
 
         for i in range(number):
-            username = generate_name()
-            task = loop.create_task(start(f"[Thread{i}]", username, wait_time, meetingcode, passcode))
+            user = indian_random()
+            task = loop.create_task(start(f"[Thread{i}]", user, wait_time, meetingcode, passcode))
             tasks.append(task)
 
         await asyncio.gather(*tasks)
