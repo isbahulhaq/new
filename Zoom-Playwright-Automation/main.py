@@ -5,7 +5,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import nest_asyncio
 import requests
-from getindianname import generate   # <-- CORRECT FUNCTION
+from getindianname import name   # <-- ONLY valid function
 
 from playwright.async_api import async_playwright
 
@@ -20,8 +20,8 @@ def sync_print(text):
         print(text)
 
 
-async def start(name, user, wait_time, meetingcode, passcode):
-    sync_print(f"{name} started!")
+async def start(name_id, username, wait_time, meetingcode, passcode):
+    sync_print(f"{name_id} started!")
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
@@ -52,25 +52,25 @@ async def start(name, user, wait_time, meetingcode, passcode):
         except:
             pass
 
-        # Fill name + passcode
+        # Fill details
         await page.wait_for_selector('input[type="text"]', timeout=200000)
-        await page.fill('input[type="text"]', user)
+        await page.fill('input[type="text"]', username)
         await page.fill('input[type="password"]', passcode)
 
         join_button = await page.wait_for_selector('button.preview-join-button')
         await join_button.click()
 
-        # Try joining audio
+        # Join Audio
         try:
             mic_button = await page.wait_for_selector('button:text(\"Join Audio by Computer\")', timeout=200000)
             await mic_button.click()
-            sync_print(f"{name} mic aayenge.")
+            sync_print(f"{name_id} mic aayenge.")
         except Exception as e:
-            sync_print(f"{name} mic nahi aayenge: {str(e)}")
+            sync_print(f"{name_id} mic nahi aayenge: {str(e)}")
 
-        sync_print(f"{name} sleeping for {wait_time} seconds ...")
+        sync_print(f"{name_id} sleeping for {wait_time} seconds ...")
         await asyncio.sleep(wait_time)
-        sync_print(f"{name} ended!")
+        sync_print(f"{name_id} ended!")
 
         await browser.close()
 
@@ -81,14 +81,15 @@ async def main():
     passcode = input("Enter Password (No Space): ")
 
     sec = 90
-    wait_time = sec * 60  # 90 minutes
+    wait_time = sec * 60 
 
     with ThreadPoolExecutor(max_workers=number) as executor:
         loop = asyncio.get_event_loop()
         tasks = []
+
         for i in range(number):
-            user = generate()  # <-- CORRECT NAME GENERATOR
-            task = loop.create_task(start(f"[Thread{i}]", user, wait_time, meetingcode, passcode))
+            username = name()   # <-- FIXED, WORKING
+            task = loop.create_task(start(f"[Thread{i}]", username, wait_time, meetingcode, passcode))
             tasks.append(task)
 
         await asyncio.gather(*tasks)
