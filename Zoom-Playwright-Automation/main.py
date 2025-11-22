@@ -5,7 +5,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import nest_asyncio
 import requests
-from getindianname import get_random_name    # <-- FIXED
+from getindianname import generate   # <-- CORRECT FUNCTION
 
 from playwright.async_api import async_playwright
 
@@ -76,19 +76,18 @@ async def start(name, user, wait_time, meetingcode, passcode):
 
 
 async def main():
-    global running
     number = int(input("Enter number of Users: "))
     meetingcode = input("Enter meeting code (No Space): ")
     passcode = input("Enter Password (No Space): ")
 
     sec = 90
-    wait_time = sec * 60 
+    wait_time = sec * 60  # 90 minutes
 
     with ThreadPoolExecutor(max_workers=number) as executor:
         loop = asyncio.get_event_loop()
         tasks = []
         for i in range(number):
-            user = get_random_name()    # <-- FIXED
+            user = generate()  # <-- CORRECT NAME GENERATOR
             task = loop.create_task(start(f"[Thread{i}]", user, wait_time, meetingcode, passcode))
             tasks.append(task)
 
