@@ -47,15 +47,18 @@ async def start(name, user, wait_time, meetingcode, passcode):
         except:
             pass
 
+        # Enter name and password
         await page.wait_for_selector('input[type="text"]')
         await page.fill('input[type="text"]', user)
         await page.fill('input[type="password"]', passcode)
 
+        # Join Meeting
         join_button = await page.wait_for_selector('button.preview-join-button')
         await join_button.click()
 
+        # Audio join
         try:
-            mic_button = await page.wait_for_selector('button:text(\"Join Audio by Computer\")', timeout=150000)
+            mic_button = await page.wait_for_selector('button:text("Join Audio by Computer")', timeout=150000)
             await mic_button.click()
             sync_print(f"{name} mic aayenge.")
         except:
@@ -74,14 +77,14 @@ async def main():
     passcode = input("Enter Password (No Space): ")
 
     sec = 1
-    wait_time = sec * 60
+    wait_time = sec * 60  # 1 minute per bot
 
     with ThreadPoolExecutor(max_workers=number):
         loop = asyncio.get_event_loop()
         tasks = []
 
         for i in range(number):
-            user = indian_random()
+            user = indian_name()   # <-- FINAL FIXED
             task = loop.create_task(start(f"[Thread{i}]", user, wait_time, meetingcode, passcode))
             tasks.append(task)
 
