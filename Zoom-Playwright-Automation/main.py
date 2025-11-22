@@ -5,7 +5,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import nest_asyncio
 import requests
-from getindianname import random as indian_random
+from getindianname import indian_name
 from playwright.async_api import async_playwright
 
 nest_asyncio.apply()
